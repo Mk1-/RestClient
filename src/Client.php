@@ -23,13 +23,14 @@ class Client
     private int    $authType;
     private ClientInterface $transport;
 
+
     /**
      * Client constructor.
      * @param string $apiBaseUri base URL for api (e.q. http://any.server.org/)
-     * @param int $authType
-     * @param string $apiSecret
-     * @param string $login
-     * @param ClientInterface|null $transport
+     * @param int    $authType   authorization method - use predefined const values
+     * @param string $apiSecret  secret (token, password) if authType is other than AUTH_NONE
+     * @param string $login      user login name - only for AUTH_BASIC
+     * @param ClientInterface|null $transport PSR-18 compatible transport object
      */
     public function __construct(string $apiBaseUri,
                                 int $authType = self::AUTH_NONE, string $apiSecret = '', string $login = '',
@@ -44,9 +45,9 @@ class Client
 
 
     /**
-     * @param string $endpoint
-     * @param string $method
-     * @return array
+     * @param string $endpoint API endpoint, relative to $apiBaseUri
+     * @param string $method   valid HTTP method - GET, POST, ...
+     * @return array           ['status' => {HTTP response status}, 'body' => {response body}]
      * @throws UnknownAuthMethodException
      */
     public function callApi(string $endpoint, string $method = 'GET', string $body = '') : array
@@ -67,7 +68,6 @@ class Client
         $stat = $response->getStatusCode();
         return ['status' => $stat, 'body' => $body];
     }
-
 
     /**
      * @param string $inUri
