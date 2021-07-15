@@ -36,7 +36,7 @@ class ClientTest extends TestCase
         $trans = new TransportMock();
         $uri = "http://nonetwork";
         $c = new Client($uri, Client::AUTH_NONE, '', '', $trans);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/");
+        [$stat, $body] = $c->callApi("/");
         $this->assertEquals(404, $stat);
     }
 
@@ -44,7 +44,7 @@ class ClientTest extends TestCase
         $trans = new TransportMock();
         $uri = "http://testmock";
         $c = new Client($uri, Client::AUTH_NONE, '', '', $trans);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/unknown");
+        [$stat, $body] = $c->callApi("/unknown");
         $this->assertEquals(500, $stat);
     }
 
@@ -52,7 +52,7 @@ class ClientTest extends TestCase
         $trans = new TransportMock();
         $uri = "http://testmock";
         $c = new Client($uri, Client::AUTH_NONE, '', '', $trans);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/dummy");
+        [$stat, $body] = $c->callApi("/dummy");
         $this->assertEquals(200, $stat);
         $this->assertEquals("dummy answer", $body);
     }
@@ -61,7 +61,7 @@ class ClientTest extends TestCase
         $trans = new TransportMock();
         $uri = "http://user:pass@testmock";
         $c = new Client($uri, Client::AUTH_BASIC, '', '', $trans);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/checkauth");
+        [$stat, $body] = $c->callApi("/checkauth");
         $this->assertEquals(200, $stat);
         $this->assertEquals("Basic " . base64_encode("user:pass"), $body);
     }
@@ -70,7 +70,7 @@ class ClientTest extends TestCase
         $trans = new TransportMock();
         $uri = "http://testmock";
         $c = new Client($uri, Client::AUTH_BASIC, 'pass', 'user', $trans);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/checkauth");
+        [$stat, $body] = $c->callApi("/checkauth");
         $this->assertEquals(200, $stat);
         $this->assertEquals("Basic " . base64_encode("user:pass"), $body);
     }
@@ -78,7 +78,7 @@ class ClientTest extends TestCase
     public function test_with_real_transport_non_exsisting_uri() {
         $uri = "http://404.php.net/";
         $c = new Client($uri);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/");
+        [$stat, $body] = $c->callApi("/");
         $this->assertEquals(404, $stat);
         $this->assertEquals("Could not resolve host: 404.php.net", $body);
     }
@@ -86,7 +86,7 @@ class ClientTest extends TestCase
     public function test_with_real_transport_non_existing_endpoint() {
         $uri = "https://reqres.in";
         $c = new Client($uri);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/api/unknown/23");
+        [$stat, $body] = $c->callApi("/api/unknown/23");
         $this->assertEquals(404, $stat);
         $this->assertEquals("The requested URL returned error: 404", $body);
     }
@@ -94,7 +94,7 @@ class ClientTest extends TestCase
     public function test_with_real_transport_GET_request() {
         $uri = "https://reqres.in";
         $c = new Client($uri);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/api/users/2");
+        [$stat, $body] = $c->callApi("/api/users/2");
         $this->assertEquals(200, $stat);
         $this->assertEquals('{"data":{"id":2,"email":"janet.weaver@reqres.in"', substr($body, 0, 48));
     }
@@ -102,7 +102,7 @@ class ClientTest extends TestCase
     public function test_with_real_transport_HEAD_request() {
         $uri = "https://reqres.in";
         $c = new Client($uri);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/api/users/2", 'HEAD');
+        [$stat, $body] = $c->callApi("/api/users/2", 'HEAD');
         $this->assertEquals(200, $stat);
         $this->assertEquals('', substr($body, 0, 48));
     }
@@ -111,7 +111,7 @@ class ClientTest extends TestCase
         $uri = "https://reqres.in";
         $c = new Client($uri);
         $rqBody = '{"name": "morpheus", "job": "leader" }';
-        ['status' => $stat, 'body' => $body] = $c->callApi("/api/users", 'POST', $rqBody);
+        [$stat, $body] = $c->callApi("/api/users", 'POST', $rqBody);
         $this->assertEquals(201, $stat);
         $this->assertEquals('{"{\"name\": \"morpheus\", \"job\": \"leader\" }', substr($body, 0, 48));
     }
@@ -119,7 +119,7 @@ class ClientTest extends TestCase
     public function test_with_real_transport_DELETE_request() {
         $uri = "https://reqres.in";
         $c = new Client($uri);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/api/users/2", 'delete');
+        [$stat, $body] = $c->callApi("/api/users/2", 'delete');
         $this->assertEquals(204, $stat);
         $this->assertEquals('', substr($body, 0, 48));
     }
@@ -130,7 +130,7 @@ class ClientTest extends TestCase
         $uri = "https://api.github.com";
         $user = $_ENV['GITHUB_USER'];
         $c = new Client($uri);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/users/" . $user);
+        [$stat, $body] = $c->callApi("/users/" . $user);
         $this->assertEquals(200, $stat);
         $this->assertEquals('{"login":"' . $user . '","id":', substr($body, 0, 17 + strlen($user)));
     }
@@ -141,7 +141,7 @@ class ClientTest extends TestCase
         $uri = "https://api.github.com";
         $user = $_ENV['GITHUB_USER'];
         $c = new Client($uri, Client::AUTH_BASIC, $_ENV['GITHUB_TOKEN'], $user);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/users/" . $user);
+        [$stat, $body] = $c->callApi("/users/" . $user);
         $this->assertEquals(200, $stat);
         $this->assertObjectHasAttribute("total_private_repos", json_decode($body), "This fail means, that wrong login or token is set in .env.local file.");
     }
@@ -152,7 +152,7 @@ class ClientTest extends TestCase
         $uri = "https://api.github.com";
         $user = $_ENV['GITHUB_USER'];
         $c = new Client($uri, Client::AUTH_BEARER, $_ENV['GITHUB_TOKEN']);
-        ['status' => $stat, 'body' => $body] = $c->callApi("/users/" . $user);
+        [$stat, $body] = $c->callApi("/users/" . $user);
         $msg = "This fail means, that wrong login or token is set in .env.local file.";
         $this->assertEquals(200, $stat, $msg);
         $this->assertObjectHasAttribute("total_private_repos", json_decode($body), $msg);

@@ -31,6 +31,7 @@ class Client
      * @param string $apiSecret  secret (token, password) if authType is other than AUTH_NONE
      * @param string $login      user login name - only for AUTH_BASIC
      * @param ClientInterface|null $transport PSR-18 compatible transport object
+     * @throws UnknownAuthMethodException
      */
     public function __construct(string $apiBaseUri,
                                 int $authType = self::AUTH_NONE, string $apiSecret = '', string $login = '',
@@ -47,8 +48,8 @@ class Client
     /**
      * @param string $endpoint API endpoint, relative to $apiBaseUri
      * @param string $method   valid HTTP method - GET, POST, ...
-     * @return array           ['status' => {HTTP response status}, 'body' => {response body}]
-     * @throws UnknownAuthMethodException
+     * @return array           [{HTTP response status}, {response body}]
+     * @throws \LogicException
      */
     public function callApi(string $endpoint, string $method = 'GET', string $body = '') : array
     {
@@ -61,12 +62,12 @@ class Client
             $response = $this->transport->sendRequest($rq);
         }
         catch (ClientExceptionInterface $ex) {
-            return ['status'=>$ex->getCode(), 'body'=>$ex->getMessage()];
+            return [$ex->getCode(), $ex->getMessage()];
         }
 
         $body = $response->getBody()->__toString();
         $stat = $response->getStatusCode();
-        return ['status' => $stat, 'body' => $body];
+        return [$stat, $body];
     }
 
     /**
@@ -122,7 +123,7 @@ class Client
     /**
      * @param RequestInterface $rq
      * @return RequestInterface
-     * @throws UnknownAuthMethodException
+     * @throws \LogicException
      */
     private function addAuthHeader(RequestInterface $rq) : RequestInterface
     {
@@ -134,7 +135,8 @@ class Client
                 $line = "Bearer " . $this->apiSecret;
                 break;
             default:
-                throw new UnknownAuthMethodException();
+                // this should never happen
+                throw new \LogicException("Unexpected value of authType property.");
         }
         return $rq->withHeader("Authorization", $line);
     }
