@@ -1,4 +1,6 @@
 {
+    "name": "mk1/rest-client",
+    "description": "simple REST client with cURL transport",
     "require": {
         "ext-curl": "*",
         "nyholm/psr7": "^1.4",
